@@ -20,6 +20,7 @@ package org.kiwix.kiwixmobile.zim_manager.library_view;
 import android.util.Log;
 
 import org.kiwix.kiwixmobile.base.BasePresenter;
+import org.kiwix.kiwixmobile.core.ContentProvider;
 import org.kiwix.kiwixmobile.data.local.dao.BookDao;
 import org.kiwix.kiwixmobile.data.remote.KiwixService;
 import org.kiwix.kiwixmobile.downloader.DownloadFragment;
@@ -47,13 +48,19 @@ public class LibraryPresenter extends BasePresenter<LibraryViewCallback> {
 
   void loadBooks() {
     view.displayScanningContent();
-    compositeDisposable.add(kiwixService.getLibrary()
-        .observeOn(AndroidSchedulers.mainThread())
-        .subscribe(library -> view.showBooks(library.getBooks()), error -> {
-          String msg = error.getLocalizedMessage();
-          Log.w("kiwixLibrary", "Error loading books:" + (msg != null ? msg : "(null)"));
-          view.displayNoItemsFound();
-        }));
+    if (ContentProvider.getContentProvider().getLibraryNetworkEntity() == null) {
+      compositeDisposable.add(kiwixService.getLibrary()
+              .observeOn(AndroidSchedulers.mainThread())
+              .subscribe(library -> {
+                view.showBooks(library.getBooks());
+                ContentProvider.getContentProvider().setLibraryNetworkEntity(library);
+              }, error -> {
+                String msg = error.getLocalizedMessage();
+                Log.w("kiwixLibrary", "Error loading books:" + (msg != null ? msg : "(null)"));
+                view.displayNoItemsFound();
+              }));
+
+    } else view.showBooks(ContentProvider.getContentProvider().getLibraryNetworkEntity().getBooks());
   }
 
   void loadRunningDownloadsFromDb() {
