@@ -17,8 +17,10 @@
  */
 package org.kiwix.kiwixmobile.zim_manager.library_view;
 
-import android.util.Log;
+import javax.inject.Inject;
 
+import android.util.Log;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import org.kiwix.kiwixmobile.base.BasePresenter;
 import org.kiwix.kiwixmobile.core.ContentProvider;
 import org.kiwix.kiwixmobile.data.local.dao.BookDao;
@@ -26,49 +28,44 @@ import org.kiwix.kiwixmobile.data.remote.KiwixService;
 import org.kiwix.kiwixmobile.downloader.DownloadFragment;
 import org.kiwix.kiwixmobile.library.entity.LibraryNetworkEntity;
 
-import javax.inject.Inject;
-
-import io.reactivex.android.schedulers.AndroidSchedulers;
-
 /**
  * Created by EladKeyshawn on 06/04/2017.
  */
 
 public class LibraryPresenter extends BasePresenter<LibraryViewCallback> {
 
-  @Inject
-  KiwixService kiwixService;
+    @Inject
+    KiwixService kiwixService;
 
-  @Inject
-  BookDao bookDao;
+    @Inject
+    BookDao bookDao;
 
-  @Inject
-  LibraryPresenter() {
-  }
-
-  void loadBooks() {
-    view.displayScanningContent();
-    if (ContentProvider.getContentProvider().getLibraryNetworkEntity() == null) {
-      compositeDisposable.add(kiwixService.getLibrary()
-              .observeOn(AndroidSchedulers.mainThread())
-              .subscribe(library -> {
-                view.showBooks(library.getBooks());
-                ContentProvider.getContentProvider().setLibraryNetworkEntity(library);
-              }, error -> {
-                String msg = error.getLocalizedMessage();
-                Log.w("kiwixLibrary", "Error loading books:" + (msg != null ? msg : "(null)"));
-                view.displayNoItemsFound();
-              }));
-
-    } else view.showBooks(ContentProvider.getContentProvider().getLibraryNetworkEntity().getBooks());
-  }
-
-  void loadRunningDownloadsFromDb() {
-    for (LibraryNetworkEntity.Book book : bookDao.getDownloadingBooks()) {
-      if (!DownloadFragment.mDownloads.containsValue(book)) {
-        book.url = book.remoteUrl;
-        view.downloadFile(book);
-      }
+    @Inject LibraryPresenter() {
     }
-  }
+
+    void loadBooks() {
+        view.displayScanningContent();
+        if (ContentProvider.getContentProvider().getLibraryNetworkEntity() == null) {
+            compositeDisposable.add(kiwixService.getLibrary()
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(library -> {
+                        view.showBooks(library.getBooks());
+                        ContentProvider.getContentProvider().setLibraryNetworkEntity(library);
+                    }, error -> {
+                        String msg = error.getLocalizedMessage();
+                        Log.w("kiwixLibrary", "Error loading books:" + (msg != null ? msg : "(null)"));
+                        view.displayNoItemsFound();
+                    }));
+
+        } else view.showBooks(ContentProvider.getContentProvider().getLibraryNetworkEntity().getBooks());
+    }
+
+    void loadRunningDownloadsFromDb() {
+        for (LibraryNetworkEntity.Book book : bookDao.getDownloadingBooks()) {
+            if (!DownloadFragment.mDownloads.containsValue(book)) {
+                book.url = book.remoteUrl;
+                view.downloadFile(book);
+            }
+        }
+    }
 }

@@ -10,7 +10,6 @@ import static android.support.test.espresso.matcher.ViewMatchers.isAssignableFro
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static com.schibsted.spain.barista.interaction.BaristaClickInteractions.clickBack;
 import static com.schibsted.spain.barista.interaction.BaristaClickInteractions.clickOn;
-import static com.schibsted.spain.barista.interaction.BaristaMenuClickInteractions.clickMenu;
 import static com.schibsted.spain.barista.interaction.BaristaSwipeRefreshInteractions.refresh;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.Matchers.instanceOf;
@@ -37,7 +36,6 @@ import android.support.test.rule.GrantPermissionRule;
 import android.support.test.runner.AndroidJUnit4;
 import android.util.Log;
 import android.widget.AutoCompleteTextView;
-import com.schibsted.spain.barista.interaction.BaristaClickInteractions;
 import com.schibsted.spain.barista.interaction.BaristaMenuClickInteractions;
 import com.schibsted.spain.barista.interaction.BaristaSleepInteractions;
 import okhttp3.mockwebserver.MockResponse;
@@ -46,9 +44,11 @@ import okio.Buffer;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.FixMethodOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.MethodSorters;
 import org.kiwix.kiwixmobile.KiwixApplication;
 import org.kiwix.kiwixmobile.R;
 import org.kiwix.kiwixmobile.data.ZimContentProvider;
@@ -61,6 +61,7 @@ import org.kiwix.kiwixmobile.utils.KiwixIdlingResource;
 
 @LargeTest
 @RunWith(AndroidJUnit4.class)
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BookmarksTest {
 
     private static final String KIWIX_BOOKMARKS_TEST = "kiwixBookmarksTest";
@@ -115,12 +116,12 @@ public class BookmarksTest {
         }
     }
 
-//    @Test
-//    public void clickOnBookmark() {
-//        mActivityTestRule.launchActivity(null);
-//
-//        clickOn(R.id.bottom_toolbar_bookmark);
-//    }
+    //    @Test
+    //    public void clickOnBookmark() {
+    //        mActivityTestRule.launchActivity(null);
+    //
+    //        clickOn(R.id.bottom_toolbar_bookmark);
+    //    }
 
     @Test
     public void bookmarksAddTest() {
@@ -189,7 +190,7 @@ public class BookmarksTest {
     }
 
     @Test
-    public void bookmarksSearchText() {
+    public void searchBookmarksText() {
         mActivityTestRule.launchActivity(null);
         BaristaSleepInteractions.sleep(TEST_PAUSE_MS);
         BaristaMenuClickInteractions.clickMenu(getResourceString(R.string.menu_bookmarks));
@@ -200,6 +201,21 @@ public class BookmarksTest {
         // typeSearchViewText("Mongol");
         BaristaSleepInteractions.sleep(1000);
     }
+
+    @Test
+    public void clickBookmarksTest() {
+        mActivityTestRule.launchActivity(null);
+        enterSettings();
+        onData(allOf(
+                is(instanceOf(Preference.class)),
+                withKey("pref_bottomtoolbar")))
+                .perform(click());
+
+        clickBack();
+        BaristaSleepInteractions.sleep(TEST_PAUSE_MS);
+        BaristaMenuClickInteractions.clickMenu(getResourceString(R.string.menu_bookmarks));
+    }
+
 
     public static String getResourceString(int id) {
         Context targetContext = InstrumentationRegistry.getTargetContext();
