@@ -100,4 +100,5 @@ public class MainActivityTest {
     BaristaSleepInteractions.sleep(TEST_PAUSE_MS);
     clickOn(R.string.zim_downloads);
   }
+
 }

@@ -11,12 +11,16 @@ buildscript {
     classpath "com.android.tools.build:gradle:$androidGradlePluginVersion"
     classpath "com.testdroid:gradle:$testdroidGradlePluginVersion"
     classpath 'org.apache.httpcomponents:httpclient-android:4.3.3'
+    classpath 'org.jacoco:org.jacoco.core:0.8.0'
   }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'checkstyle'
 apply plugin: 'testdroid'
+apply plugin: 'jacoco'
+
+
 
 repositories {
   google()
@@ -183,7 +187,7 @@ android {
     cruncherEnabled true
   }
 
-  testBuildType "coverage"
+  testBuildType "ess"
 
   lintOptions {
     // Treat lint seriously
@@ -236,6 +240,12 @@ android {
     // Release Type
     release {
       buildConfigField "String", "KIWIX_DOWNLOAD_URL", "\"http://download.kiwix.org/\""
+    }
+
+    ess {
+      initWith debug
+      testCoverageEnabled true
+      matchingFallbacks = ['debug', 'release']
     }
 
   }
